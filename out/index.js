@@ -36,8 +36,10 @@ function watchProject(project) {
                     //
                     var universalModuleDefinitionStr = getUniversalModuleDefinition(project.moduleName, project.globalModule);
                     outjsStr = outjsStr.replace(universalModuleDefinitionStr, "");
-                    outjsStr += universalModuleDefinitionStr;
-                    writeFile(outjsFilePath, outjsStr);
+                    if (outjsStr.indexOf(universalModuleDefinitionStr) == -1) {
+                        outjsStr += universalModuleDefinitionStr;
+                        writeFile(outjsFilePath, outjsStr);
+                    }
                 }
                 //添加 d.ts 文件的模块导出代码
                 var outdtsFilePath = (function (path) {
@@ -57,9 +59,10 @@ function watchProject(project) {
                     // })(outdtsFilePath);
                     var declaremodulestr = getdeclaremodule(project.moduleName);
                     var outdtsStr = readFile(outdtsFilePath);
-                    outdtsStr = outdtsStr.replace(declaremodulestr, "");
-                    declaremodulestr += outdtsStr;
-                    writeFile(moduledtsPath, declaremodulestr);
+                    if (outdtsStr.indexOf(declaremodulestr) == -1) {
+                        declaremodulestr += outdtsStr;
+                        writeFile(moduledtsPath, declaremodulestr);
+                    }
                 }
             }
         }
