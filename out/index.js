@@ -31,13 +31,13 @@ function watchProject(project) {
                     var outjsStr = readFile(outjsFilePath);
                     // 添加版本号输出
                     var packageObj = readFileObject(project.path + "/package.json");
+                    var appendStr = "";
                     if (packageObj && packageObj.name && packageObj.version)
-                        outjsStr += "\nconsole.log(\"" + packageObj.name + "-" + packageObj.version + "\");";
+                        appendStr += "\nconsole.log(\"" + packageObj.name + "-" + packageObj.version + "\");";
                     //
-                    var universalModuleDefinitionStr = getUniversalModuleDefinition(project.moduleName, project.globalModule);
-                    outjsStr = outjsStr.replace(universalModuleDefinitionStr, "");
-                    if (outjsStr.indexOf(universalModuleDefinitionStr) == -1) {
-                        outjsStr += universalModuleDefinitionStr;
+                    appendStr += getUniversalModuleDefinition(project.moduleName, project.globalModule);
+                    if (outjsStr.indexOf(appendStr) == -1) {
+                        outjsStr += appendStr;
                         writeFile(outjsFilePath, outjsStr);
                     }
                 }
