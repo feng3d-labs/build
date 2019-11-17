@@ -25,6 +25,7 @@ export function watchProject(project: { path: string, moduleName: string, global
     {
         data = data.trim();
         if (data.length > 10) console.log(data);
+        if (!project.moduleName) return;
         if (data.indexOf("Compilation complete") != -1 || data.indexOf("Watching for file changes") != -1)
         {
             //在编译完成后处理 模块导出
@@ -69,7 +70,7 @@ export function watchProject(project: { path: string, moduleName: string, global
                     //     return paths.join(".");
                     // })(outdtsFilePath);
 
-                    var declaremodulestr = getdeclaremodule(project.moduleName);
+                    var declaremodulestr = getdeclaremodule(project.moduleName, project.globalModule);
                     var outdtsStr = readFile(outdtsFilePath);
                     if (outdtsStr.indexOf(declaremodulestr) == -1)
                     {
@@ -87,10 +88,10 @@ export function watchProject(project: { path: string, moduleName: string, global
     });
 }
 
-function getdeclaremodule(moduleName)
+function getdeclaremodule(moduleName, globalModule)
 {
     return `declare module '${moduleName}' {
-    export = feng3d;
+    export = ${globalModule};
 }
 `;
 }
@@ -110,15 +111,15 @@ function getUniversalModuleDefinition(moduleName, globalModule)
         root["${moduleName}"] = factory();
     ${globalModule && `
     var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-    globalObject["${globalModule || "feng3d"}"] = factory();`}
+    globalObject["${globalModule}"] = factory();`}
 })(this, function ()
 {
-    return feng3d;
+    return ${globalModule};
 });
 `
 }
 
-function writeFile(filePath, content)
+function writeFile(filePath: string, content: string)
 {
     fs.openSync(filePath, "w");
     fs.writeFileSync(filePath, content);

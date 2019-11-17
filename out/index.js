@@ -20,6 +20,8 @@ function watchProject(project) {
         data = data.trim();
         if (data.length > 10)
             console.log(data);
+        if (!project.moduleName)
+            return;
         if (data.indexOf("Compilation complete") != -1 || data.indexOf("Watching for file changes") != -1) {
             //在编译完成后处理 模块导出
             var tsconfig = readFileObject(project.path + "/tsconfig.json");
@@ -57,7 +59,7 @@ function watchProject(project) {
                     //     paths.splice(-2, 0, "module");
                     //     return paths.join(".");
                     // })(outdtsFilePath);
-                    var declaremodulestr = getdeclaremodule(project.moduleName);
+                    var declaremodulestr = getdeclaremodule(project.moduleName, project.globalModule);
                     var outdtsStr = readFile(outdtsFilePath);
                     if (outdtsStr.indexOf(declaremodulestr) == -1) {
                         declaremodulestr += outdtsStr;
@@ -73,11 +75,11 @@ function watchProject(project) {
     });
 }
 exports.watchProject = watchProject;
-function getdeclaremodule(moduleName) {
-    return "declare module '" + moduleName + "' {\n    export = feng3d;\n}\n";
+function getdeclaremodule(moduleName, globalModule) {
+    return "declare module '" + moduleName + "' {\n    export = " + globalModule + ";\n}\n";
 }
 function getUniversalModuleDefinition(moduleName, globalModule) {
-    return "\n(function universalModuleDefinition(root, factory)\n{\n    if (typeof exports === 'object' && typeof module === 'object')\n        module.exports = factory();\n    else if (typeof define === 'function' && define.amd)\n        define([], factory);\n    else if (typeof exports === 'object')\n        exports[\"" + moduleName + "\"] = factory();\n    else\n        root[\"" + moduleName + "\"] = factory();\n    " + (globalModule && "\n    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);\n    globalObject[\"" + (globalModule || "feng3d") + "\"] = factory();") + "\n})(this, function ()\n{\n    return feng3d;\n});\n";
+    return "\n(function universalModuleDefinition(root, factory)\n{\n    if (typeof exports === 'object' && typeof module === 'object')\n        module.exports = factory();\n    else if (typeof define === 'function' && define.amd)\n        define([], factory);\n    else if (typeof exports === 'object')\n        exports[\"" + moduleName + "\"] = factory();\n    else\n        root[\"" + moduleName + "\"] = factory();\n    " + (globalModule && "\n    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);\n    globalObject[\"" + globalModule + "\"] = factory();") + "\n})(this, function ()\n{\n    return " + globalModule + ";\n});\n";
 }
 function writeFile(filePath, content) {
     fs.openSync(filePath, "w");
